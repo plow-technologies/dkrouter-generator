@@ -1,4 +1,21 @@
-dkrouter-generator
-==================
+# dkrouter-generator
 
-Generate config files from persist-mongo-template collections, that can be used with directed-key router
+TODO: Write description here
+
+## Installation
+
+TODO: Write installation instructions here
+
+## Usage
+
+TODO: Write usage instructions here
+
+## How to run tests
+
+```
+cabal configure --enable-tests && cabal build && cabal test
+```
+
+## Contributing
+
+TODO: Write contribution instructions here
