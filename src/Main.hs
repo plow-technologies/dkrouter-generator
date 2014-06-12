@@ -25,7 +25,13 @@ main = do
   eBoundList <- T.sequence $ (\conf -> createAndMatchKeys conf (fromJust . onpingTagCombinedPid . entityVal) hosts) <$> dbConf
   case eBoundList of
     Left _ -> putStrLn "Error reading config file"
-    Right boundList -> BSL.putStrLn . A.encode $ listToOutput hosts boundList
+    Right boundList -> do
+      BSL.putStrLn . A.encode $ boundList
+      case dbConf of 
+        Left _ -> putStrLn "Error reading mongo conf"
+        Right conf -> do
+          keys <- getAllkeysTest conf (fromJust . onpingTagCombinedPid . entityVal)
+          putStrLn . show . maximum $ keys
 
 readKeyGen :: FilePath -> IO KeyGenConfig
 readKeyGen fp = do
@@ -35,8 +41,8 @@ readKeyGen fp = do
     Right kgcfg -> return kgcfg
 
 
-listToOutput :: [String] -> [(Int,Int)] -> [KeyGenOutput]
-listToOutput sList bList = zipWith (\host (upper,lower) -> KeyGenOutput host upper lower) sList bList
+--listToOutput :: [String] -> [(Int,String)] -> [KeyGenOutput]
+--listToOutput sList bList = zipWith (\host (upper,lower) -> KeyGenOutput host upper lower) sList bList
 
 data KeyGenConfig = KeyGenConfig {
   hostList :: [String]
