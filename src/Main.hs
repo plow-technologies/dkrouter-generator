@@ -22,16 +22,13 @@ main = do
   dbConf <- readDBConf "config.yml"
   genConf <- readKeyGen "config.yml"
   let hosts = (hostList genConf)
-  eBoundList <- T.sequence $ (\conf -> createAndMatchKeys conf (fromJust . onpingTagCombinedPid . entityVal) hosts) <$> dbConf
+  eBoundList <- T.sequence $ (\conf -> createAndMatchKeys conf getAlarmId hosts) <$> dbConf
   case eBoundList of
     Left _ -> putStrLn "Error reading config file"
-    Right boundList -> do
-      BSL.putStrLn . A.encode $ boundList
-      case dbConf of 
-        Left _ -> putStrLn "Error reading mongo conf"
-        Right conf -> do
-          keys <- getAllkeysTest conf (fromJust . onpingTagCombinedPid . entityVal)
-          putStrLn . show . maximum $ keys
+    Right boundList -> BSL.putStrLn . A.encode $ listToOutput boundList
+
+getAlarmId :: Entity Alarm -> Key Alarm
+getAlarmId = entityKey
 
 readKeyGen :: FilePath -> IO KeyGenConfig
 readKeyGen fp = do
@@ -41,8 +38,8 @@ readKeyGen fp = do
     Right kgcfg -> return kgcfg
 
 
---listToOutput :: [String] -> [(Int,String)] -> [KeyGenOutput]
---listToOutput sList bList = zipWith (\host (upper,lower) -> KeyGenOutput host upper lower) sList bList
+listToOutput :: [(a,b)] -> [KeyGenOutput b a]
+listToOutput sList = map (\(host, bound) -> KeyGenOutput bound host ) sList
 
 data KeyGenConfig = KeyGenConfig {
   hostList :: [String]
@@ -50,14 +47,12 @@ data KeyGenConfig = KeyGenConfig {
 
 instance FromJSON KeyGenConfig where
 
-data KeyGenOutput = KeyGenOutput {
-  keyGenHost       :: String
-, keyGenUpperBound :: Int
-, keyGenLowerBound :: Int
+data KeyGenOutput a b = KeyGenOutput {
+  keyGenHost  :: a
+, keyGenBound :: b
 } deriving (Eq, Show)
 
 
-instance ToJSON KeyGenOutput where
+instance (ToJSON a, ToJSON b) => ToJSON (KeyGenOutput a b) where
   toJSON (KeyGenOutput {..}) = object ["host" .= keyGenHost
-                                      ,"upperBound" .= keyGenUpperBound
-                                      ,"lowerBound" .= keyGenLowerBound]
+                                      ,"upperBound" .= keyGenBound]
