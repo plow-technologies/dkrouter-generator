@@ -32,13 +32,16 @@ getAllkeysTest mongoConf keyFcn = do
 
 matchKeys :: [a] -> [b] -> [(a,b)]
 matchKeys aList bList =
-  let delta = quot (length aList) ((length bList) - 1)
-      groupedOnDelta = reverse $ groupUp delta aList
-      lastElem = last aList
-  in createBoundsTuples  ((map (!! 0) groupedOnDelta) ++ [lastElem]) bList
+  let delta = ceiling $ (toRational . length $ aList) / (toRational . length $ bList) -- delta = quot ((length aList)) ((length bList))
+      groupedOnDelta = revLast . reverse $ groupUp delta aList
+  in createBoundsTuples  ((map (!! 0) groupedOnDelta)) bList
 
 createBoundsTuples :: [a] -> [b] -> [(a,b)]
 createBoundsTuples al bl = zipWith (\a b -> (a,b)) al bl
+
+revLast :: [[a]] -> [[a]]
+revLast (x:[]) = [reverse x]
+revLast (x:xs) = x:(revLast xs)
 
 mConf :: MongoDBConf
 mConf = MongoDBConf "127.0.0.1" "onping_production" 27017
