@@ -22,7 +22,7 @@ main = do
   dbConf <- readDBConf "config.yml"
   genConf <- readKeyGen "config.yml"
   let hosts = (hostList genConf)
-  eBoundList <- T.sequence $ (\conf -> createAndMatchKeys conf getOnpingTagPid hosts) <$> dbConf
+  eBoundList <- T.sequence $ (\conf -> createAndMatchKeys conf getAlarmId hosts) <$> dbConf
   case eBoundList of
     Left _ -> putStrLn "Error reading config file"
     Right boundList -> BSL.putStrLn . A.encode $ listToOutput boundList
