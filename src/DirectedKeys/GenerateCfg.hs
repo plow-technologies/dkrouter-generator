@@ -33,7 +33,7 @@ getAllkeysTest mongoConf keyFcn = do
 matchKeys :: [a] -> [b] -> [(a,b)]
 matchKeys aList bList =
   let delta = quot (length aList) ((length bList) - 1)
-      groupedOnDelta = init . reverse $ groupUp delta aList
+      groupedOnDelta = reverse $ groupUp delta aList
       lastElem = last aList
   in createBoundsTuples  ((map (!! 0) groupedOnDelta) ++ [lastElem]) bList
 

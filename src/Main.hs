@@ -22,13 +22,17 @@ main = do
   dbConf <- readDBConf "config.yml"
   genConf <- readKeyGen "config.yml"
   let hosts = (hostList genConf)
-  eBoundList <- T.sequence $ (\conf -> createAndMatchKeys conf getAlarmId hosts) <$> dbConf
+  eBoundList <- T.sequence $ (\conf -> createAndMatchKeys conf getOnpingTagPid hosts) <$> dbConf
   case eBoundList of
     Left _ -> putStrLn "Error reading config file"
     Right boundList -> BSL.putStrLn . A.encode $ listToOutput boundList
 
 getAlarmId :: Entity Alarm -> Key Alarm
 getAlarmId = entityKey
+
+getOnpingTagPid :: Entity OnpingTagHistory -> Maybe Int
+getOnpingTagPid = onpingTagHistoryPid . entityVal
+
 
 readKeyGen :: FilePath -> IO KeyGenConfig
 readKeyGen fp = do
